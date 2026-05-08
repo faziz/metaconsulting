@@ -1,0 +1,30 @@
+name: Test Action
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test PostgreSQL Schema Setup
+        uses: ./
+        with:
+          host: postgres.metaconsulting.au
+          port: '5432'
+          admin_user: ${{ secrets.POSTGRES_USER }}
+          admin_password: ${{ secrets.DB_PASSWORD }}
+          database: test_db
+          db_user: test_user
+          db_password: ${{ secrets.TEST_DB_PASSWORD }}
+          schema_file: ./examples/schema.sql
+          extensions: 'uuid-ossp,pgcrypto'
+          ssl_mode: require
+
+      - name: Show Database URL
+        run: |
+          echo "Database URL: ${{ steps.setup.outputs.database_url }}"

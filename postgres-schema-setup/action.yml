@@ -1,0 +1,73 @@
+name: 'PostgreSQL Schema Setup'
+description: 'Creates database, user, and applies schema to external PostgreSQL using Docker'
+branding:
+  icon: 'database'
+  color: 'blue'
+
+inputs:
+  host:
+    description: 'PostgreSQL host address'
+    required: true
+  port:
+    description: 'PostgreSQL port'
+    required: false
+    default: '5432'
+  admin_user:
+    description: 'PostgreSQL admin username'
+    required: true
+  admin_password:
+    description: 'PostgreSQL admin password'
+    required: true
+  database:
+    description: 'Database name to create'
+    required: true
+  db_user:
+    description: 'Database user to create'
+    required: true
+  db_password:
+    description: 'Database user password'
+    required: true
+  schema_file:
+    description: 'Path to SQL schema file to apply'
+    required: false
+    default: ''
+  extensions:
+    description: 'Comma-separated list of PostgreSQL extensions to install'
+    required: false
+    default: ''
+  ssl_mode:
+    description: 'PostgreSQL SSL mode'
+    required: false
+    default: 'require'
+  postgres_image:
+    description: 'PostgreSQL Docker image to use for psql'
+    required: false
+    default: 'postgres:18-alpine'
+
+outputs:
+  database_url:
+    description: 'Connection string for the created database'
+    value: ${{ steps.setup.outputs.database_url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Database
+      id: setup
+      shell: bash
+      run: |
+        chmod +x ${{ github.action_path }}/scripts/setup-db.sh
+        ${{ github.action_path }}/scripts/setup-db.sh \
+          --host "${{ inputs.host }}" \
+          --port "${{ inputs.port }}" \
+          --admin-user "${{ inputs.admin_user }}" \
+          --admin-password "${{ inputs.admin_password }}" \
+          --database "${{ inputs.database }}" \
+          --db-user "${{ inputs.db_user }}" \
+          --db-password "${{ inputs.db_password }}" \
+          --ssl-mode "${{ inputs.ssl_mode }}" \
+          --image "${{ inputs.postgres_image }}" \
+          --schema-file "${{ inputs.schema_file }}" \
+          --extensions "${{ inputs.extensions }}"
+      env:
+        GITHUB_OUTPUT: ${{ github.output }}
