@@ -71,7 +71,15 @@ run_psql "postgres" "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_role
 # 2. Create database
 echo ""
 echo "📝 [2/5] Creating database: $DB_NAME"
-run_psql "postgres" "SELECT 'CREATE DATABASE $DB_NAME OWNER $DB_USER' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME')\gexec" 2>&1 | grep -v "^$" || true
+DB_EXISTS=$(docker run --rm --network host "$PG_IMAGE" psql "$CONN_BASE dbname=postgres" -t -c "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME';" 2>/dev/null | xargs)
+
+if [ "$DB_EXISTS" != "1" ]; then
+  echo "Creating database: $DB_NAME"
+  docker run --rm --network host "$PG_IMAGE" psql "$CONN_BASE dbname=postgres" -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;" 2>&1 || true
+else
+  echo "Database already exists: $DB_NAME"
+fi
+
 
 # 3. Grant database privileges
 echo ""
