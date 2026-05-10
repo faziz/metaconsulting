@@ -17,7 +17,7 @@ A reusable GitHub Action to create databases, users, and apply schemas on extern
 ### Basic
 
 ```yaml
-- uses: metaconsulting/postgres-schema-setup@v1
+- uses: metaconsulting/postgres-schema-setup@v1.1.0
   with:
     host: postgres.metaconsulting.au
     admin_user: ${{ secrets.POSTGRES_USER }}
